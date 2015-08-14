@@ -42,5 +42,5 @@ if __name__ == "__main__":
     config = toml.load(args.cfg_file)
     for addr,opts in config.items():
         if "extra_tests" in opts:
-            opts["extra_tests"] = [ lambda: call(x["script"]) for x in opts["extra_tests"].values() ]
+            opts["extra_tests"] = [ lambda: call(expanduser(x["script"])) for x in opts["extra_tests"].values() ]
         test_machine(addr,**opts)
