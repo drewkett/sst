@@ -34,9 +34,6 @@ def test_machine(ip,tcp_ports=None,udp_ports=None,extra_tests=None):
             for t in extra_tests:
                 t()
 
-def test_script(script):
-    call((script,))
-
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("cfg_file")
@@ -45,5 +42,5 @@ if __name__ == "__main__":
     config = toml.load(args.cfg_file)
     for addr,opts in config.items():
         if "extra_tests" in opts:
-            opts["extra_tests"] = [ lambda: test_script(x["script"]) for x in opts["extra_tests"].values() ]
+            opts["extra_tests"] = [ lambda: call(x["script"]) for x in opts["extra_tests"].values() ]
         test_machine(addr,**opts)
