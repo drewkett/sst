@@ -18,29 +18,38 @@ def test_port(ip,port,udp=False):
             print("%s:%s/udp is not open"%(ip,port))
         else:
             print("%s:%s/tcp is not open"%(ip,port))
+        return 1
+    else:
+        return 0
 
 def test_machine(ip,tcp_ports=None,udp_ports=None,extra_tests=None):
+    errors = 0
     ret = call(("ping","-c1","-W1",ip),stdout=PIPE)
     if ret:
         print("Couldn't ping '%s'"%ip)
+        errors += 1
     else:
         if tcp_ports:
             for port in tcp_ports:
-                test_port(ip,port)
+                errors += test_port(ip,port)
         if udp_ports:
             for port in udp_ports:
-                test_port(ip,port,udp=True)
+                errors += test_port(ip,port,udp=True)
         if extra_tests:
             for t in extra_tests:
-                t()
+                if t():
+                    errors += 1
+    return errors
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("cfg_file",default="sst.cfg",nargs='?')
     args = parser.parse_args()
 
+    errors = 0
     config = toml.load(args.cfg_file)
     for addr,opts in config.items():
         if "extra_tests" in opts:
             opts["extra_tests"] = [ lambda: call(expanduser(x["script"])) for x in opts["extra_tests"].values() ]
-        test_machine(addr,**opts)
+        errors += test_machine(addr,**opts)
+    exit(errors)
