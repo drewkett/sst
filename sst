@@ -43,11 +43,11 @@ def test_machine(ip,tcp_ports=None,udp_ports=None,extra_tests=None):
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("cfg_file",default="sst.cfg",nargs='?')
+    parser.add_argument("cfg_file",default="~/.sst.cfg",nargs='?')
     args = parser.parse_args()
 
     errors = 0
-    config = toml.load(args.cfg_file)
+    config = toml.load(expanduser(args.cfg_file))
     for addr,opts in config.items():
         if "extra_tests" in opts:
             opts["extra_tests"] = [ lambda: call(expanduser(x["script"])) for x in opts["extra_tests"].values() ]
